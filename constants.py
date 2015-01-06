@@ -1,0 +1,12 @@
+VERSION = "1.0.0"
+
+WIDTH = 500
+HEIGHT = 300
+SCALE = 3
+
+FPS = 60.0
+CAMBORDER = 64
+
+GAME_TITLE = "RPG"
+
+TILES_FILEPATH = "tiles.tga"
