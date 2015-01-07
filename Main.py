@@ -49,18 +49,20 @@ def subtile(img, w, h, cx, cy):
 img_tiles = pygame.image.load(os.path.join("dat", constants.TILES_FILEPATH))
 img_tiles = img_tiles.convert(screen)
 
-
 img_tiles_grass_light = subtile(img_tiles, 16, 16, 0, 1)
 img_tiles_path_sandy = subtile(img_tiles, 16, 16, 0, 2)
 img_tiles_wall_stone = subtile(img_tiles, 16, 16, 0, 3)
-img_tiles_doorno = subtile(img_tiles, 16, 16, 0, 4)
-img_tiles_stone_sketchy = subtile(img_tiles, 16, 16, 0, 5)
+img_tiles_lava = subtile(img_tiles, 16, 16, 0, 4)
+img_tiles_mountain_floor = subtile(img_tiles, 16, 16, 0, 5)
 img_tiles_water_light = subtile(img_tiles, 16, 16, 0, 6)
-img_tiles_portal_red = subtile(img_tiles, 16, 16, 0, 7)
-
-
-'''The above are the old images. Different images will be used depending on the
-game'''
+img_tiles_snow = subtile(img_tiles, 16, 16, 0, 7)
+img_tiles_grass_long = subtile(img_tiles, 16, 16, 0, 8)
+img_tiles_path_stone = subtile(img_tiles, 16, 16, 0, 9)
+img_tiles_grass_flowers = subtile(img_tiles, 16, 16, 0, 10)
+img_tiles_sand = subtile(img_tiles, 16, 16, 0, 11)
+img_tiles_volcanic_floor = subtile(img_tiles, 16, 16, 0, 12)
+img_tiles_stone_floor = subtile(img_tiles, 16, 16, 0, 13)
+img_tiles_boulder = subtile(img_tiles, 16, 16, 0, 14)
 
 def rgb(r, g, b):
     '''
@@ -208,13 +210,13 @@ class PlayerEnt(BaseEnt):
         if self.ox == 0 and self.oy == 0:
                 # Work out movement
                 vx, vy = 0, 0
-                if newkeys[pygame.K_LEFT]:
-                        vx -= 1
-                if newkeys[pygame.K_RIGHT]:
+                if newkeys[pygame.K_LEFT] or newkeys[pygame.K_a]:
+                        vx -= 1 
+                if newkeys[pygame.K_RIGHT] or newkeys[pygame.K_d]:
                         vx += 1
-                if newkeys[pygame.K_UP]:
+                if newkeys[pygame.K_UP] or newkeys[pygame.K_w]:
                         vy -= 1
-                if newkeys[pygame.K_DOWN]:
+                if newkeys[pygame.K_DOWN] or newkeys[pygame.K_s]:
                         vy += 1
 
                 # Bail if we're not moving anywhere
@@ -237,30 +239,57 @@ class PlayerEnt(BaseEnt):
                         self.cy += vy
                         self.oy -= 16*vy
 
-class GrassCellLight(BaseCell):
-    colour = rgb(170, 100, 85)
-    imgs = img_tiles_grass_light
+class FloorCell(BaseCell):
+    '''All Floor Cells aren't Solid'''
+    colour = (55, 55, 55)
     solid = False
 
-class PathCellSandy(BaseCell):
-    colour = rgb(170, 100, 85)
-    imgs = img_tiles_path_sandy
-    solid = False
-
-class WallCellStone(BaseCell):
-    colour = rgb(55, 55, 55)
-    imgs = img_tiles_wall_stone 
+class WallCell(BaseCell):
+    '''All Wall Cells are Solid'''
+    colour = (55, 55, 55)
     solid = True
+    
+class GrassCellLight(FloorCell):
+    imgs = img_tiles_grass_light
 
-class StoneCellSketchy(BaseCell):
-    colour = rgb(55, 55, 55)
-    imgs = img_tiles_stone_sketchy
-    solid = False
+class PathCellSandy(FloorCell):
+    imgs = img_tiles_path_sandy
 
-class WaterCellLight(BaseCell):
-    colour = rgb(0, 0, 170)
+class WallCellStone(WallCell):
+    imgs = img_tiles_wall_stone 
+
+class LavaCell(WallCell):
+    imgs = img_tiles_lava
+
+class MountainCellFloor(FloorCell):
+    imgs = img_tiles_mountain_floor
+
+class WaterCellLight(WallCell):
     imgs = img_tiles_water_light
-    solid = True # To prevent walking on it...
+
+class SnowCell(FloorCell):
+    imgs = img_tiles_snow
+
+class GrassCellLong(FloorCell):
+    imgs = img_tiles_grass_long
+
+class PathCellStone(FloorCell):
+    imgs = img_tiles_path_stone
+
+class GrassCellFlowers(FloorCell):
+    imgs = img_tiles_grass_flowers
+
+class SandCell(FloorCell):
+    imgs = img_tiles_sand
+
+class VolcanicCellFloor(FloorCell):
+    imgs = img_tiles_volcanic_floor
+
+class StoneCellFloor(FloorCell):
+    imgs = img_tiles_stone_floor
+
+class BoulderCell(WallCell):
+    imgs = img_tiles_boulder
 
 class Level:
     """
@@ -336,12 +365,39 @@ class Level:
 
         elif c == "#":
             return WallCellStone()
-
-        elif c == "s":
-            return StoneCellSketchy()
+        
+        elif c == "l":
+            return LavaCell()
+        
+        elif c == "-":
+            return MountainCellFloor()
 
         elif c == "w":
             return WaterCellLight()
+
+        elif c == "s":
+            return SnowCell()
+
+        elif c == "<":
+            return GrassCellLong()
+
+        elif c == "P":
+            return PathCellStone()
+
+        elif c == ">":
+            return GrassCellFlowers()
+
+        elif c == "*":
+            return SandCell()
+
+        elif c == "v":
+            return VolcanicCellFloor()
+
+        elif c == "_":
+            return StoneCellFloor()
+
+        elif c == "b":
+            return BoulderCell()
 
         elif c == "@":
             assert self.player == None

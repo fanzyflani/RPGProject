@@ -7,8 +7,18 @@ KEY
 , = Light grass
 p = Sandy Path
 # = Stone Wall (Solid)
-s = Sketchy Stone
-w = Li,ht Water
+l = Lava
+- = Mountain Floor
+w = Light Water
+s = Snow
+< = Long Grass
+P = Stone Path
+> = Grass with Flowers
+* = Sand
+v = Volcanic Floor
+_ = Stone Floor
+b = Boulder (Solid)
+t = Tent (Solid)
 @ = Player Start (LIMIT : 1)
 '''
 
