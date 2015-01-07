@@ -64,6 +64,22 @@ img_tiles_volcanic_floor = subtile(img_tiles, 16, 16, 0, 12)
 img_tiles_stone_floor = subtile(img_tiles, 16, 16, 0, 13)
 img_tiles_boulder = subtile(img_tiles, 16, 16, 0, 14)
 
+img_player_sprites = pygame.image.load(os.path.join("dat", "Spritesheet.gif"))
+img_player_sprites = img_player_sprites.convert(screen)
+
+img_player_sprites_down_right = subtile(img_player_sprites, 16, 16, 0, 0)
+img_player_sprites_down_standing = subtile(img_player_sprites, 16, 16, 1, 0)
+img_player_sprites_down_left = subtile(img_player_sprites, 16, 16, 2, 0)
+img_player_sprites_left_right = subtile(img_player_sprites, 16, 16, 0, 1)
+img_player_sprites_left_standing = subtile(img_player_sprites, 16, 16, 1, 1)
+img_player_sprites_left_left = subtile(img_player_sprites, 16, 16, 2, 1)
+img_player_sprites_right_right = subtile(img_player_sprites, 16, 16, 0, 2)
+img_player_sprites_right_standing = subtile(img_player_sprites, 16, 16, 1, 2)
+img_player_sprites_right_left = subtile(img_player_sprites, 16, 16, 2, 2)
+img_player_sprites_up_right = subtile(img_player_sprites, 16, 16, 0, 3)
+img_player_sprites_up_standing = subtile(img_player_sprites, 16, 16, 1, 3)
+img_player_sprites_up_left = subtile(img_player_sprites, 16, 16, 2, 3)
+
 def rgb(r, g, b):
     '''
     Turns an RGB tuple into a colour value.
@@ -125,28 +141,35 @@ class BaseCell:
                 """
                 return self.solid
 
-class BaseEnt:
+class BaseEnt():
     colour = rgb(255, 0, 255)
     rect = (4, 4, 8, 8)
     world = 0
 
-    def __init__(self, lvl, cx, cy):
+    def __init__(self, lvl, cx, cy, sprite):
         '''
         Places an entity on level, "lvl", at cell cx, cy.
         '''
         self.lvl = lvl
         self.cx, self.cy = cx, cy
         self.ox, self.oy = 0, 0
+        self.sprite = sprite
 
     def draw(self, surf, x, y, world):
         '''
         Draws the entity at pixel position x, y.
         '''
-        rx, ry, rw, rh = self.rect
-        rx += x + self.cx*16 + self.ox
-        ry += y + self.cy*16 + self.oy
-        pygame.draw.rect(surf, self.colour, (rx, ry, rw, rh))
-
+        if self.sprite == None:
+            rx, ry, rw, rh = self.rect
+            rx += x + self.cx*16 + self.ox
+            ry += y + self.cy*16 + self.oy
+            pygame.draw.rect(surf, self.colour, (rx, ry, rw, rh))
+        else:
+            rx, ry, rw, rh = self.rect
+            rx += x + self.cx*16 + self.ox - 4
+            ry += y + self.cy*16 + self.oy - 4
+            surf.blit(self.sprite, (rx, ry, rw, rh))
+            pygame.display.update()
     def tick(self):
         '''
         Logic Update for entity.
@@ -157,6 +180,7 @@ class BaseEnt:
 
 class PlayerEnt(BaseEnt):
     colour = rgb(0, 255, 255)
+    stepcount = 0
 
     def cell_is_walkable(self, cx, cy, world=None):
         '''
@@ -211,13 +235,57 @@ class PlayerEnt(BaseEnt):
                 # Work out movement
                 vx, vy = 0, 0
                 if newkeys[pygame.K_LEFT] or newkeys[pygame.K_a]:
-                        vx -= 1 
+                        vx -= 1
+                        if self.stepcount % 2 == 0:
+                            self.sprite = img_player_sprites_left_left
+                        else:
+                            self.sprite = img_player_sprites_left_right
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
+                        self.sprite = img_player_sprites_left_standing
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
                 if newkeys[pygame.K_RIGHT] or newkeys[pygame.K_d]:
                         vx += 1
+                        if self.stepcount % 2 == 0:
+                            self.sprite = img_player_sprites_right_left
+                        else:
+                            self.sprite = img_player_sprites_right_right
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
+                        self.sprite = img_player_sprites_right_standing
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
                 if newkeys[pygame.K_UP] or newkeys[pygame.K_w]:
                         vy -= 1
+                        if self.stepcount % 2 == 0:
+                            self.sprite = img_player_sprites_up_left
+                        else:
+                            self.sprite = img_player_sprites_up_right
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
+                        self.sprite = img_player_sprites_up_standing
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
                 if newkeys[pygame.K_DOWN] or newkeys[pygame.K_s]:
                         vy += 1
+                        if self.stepcount % 2 == 0:
+                            self.sprite = img_player_sprites_down_left
+                        else:
+                            self.sprite = img_player_sprites_down_right
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
+                        self.sprite = img_player_sprites_down_standing
+                        self.draw(screen, -real_camx, -real_camy, self.world)
+                        pygame.time.delay(40)
+                        pygame.display.update()
 
                 # Bail if we're not moving anywhere
                 if vx == 0 and vy == 0:
@@ -402,7 +470,7 @@ class Level:
         elif c == "@":
             assert self.player == None
             self.player_spawn = (x, y)
-            self.player = PlayerEnt(self, x, y)
+            self.player = PlayerEnt(self, x, y, img_player_sprites_down_standing)
             self.ents.append(self.player)
             return GrassCellLight()
 
@@ -439,6 +507,7 @@ while not quitflag:
 
                 # Prevent CPU fires
                 time.sleep(0.01)
+                
 
         else:
                 # Poll events
@@ -455,7 +524,6 @@ while not quitflag:
 
                 # Update tick counter
                 tick_next += SPF
-
 
 # Clean up
 pygame.quit()
