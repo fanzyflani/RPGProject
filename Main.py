@@ -169,7 +169,6 @@ class BaseEnt():
             rx += x + self.cx*16 + self.ox - 4
             ry += y + self.cy*16 + self.oy - 4
             surf.blit(self.sprite, (rx, ry, rw, rh))
-            pygame.display.update()
     def tick(self):
         '''
         Logic Update for entity.
@@ -181,6 +180,7 @@ class BaseEnt():
 class PlayerEnt(BaseEnt):
     colour = rgb(0, 255, 255)
     stepcount = 0
+    spr_chain = None
 
     def cell_is_walkable(self, cx, cy, world=None):
         '''
@@ -212,6 +212,12 @@ class PlayerEnt(BaseEnt):
             if self.oy != 0:
                 self.oy += (1 if self.oy < 0 else -1)
 
+            # Advance sprite
+            self.stepcount += 1
+            self.stepcount %= 32
+            if self.spr_chain:
+                self.sprite = self.spr_chain[self.stepcount//8]
+
             # If we've just entered the cell, call on_enter
             if self.ox == 0 and self.oy == 0:
                 self.lvl.get_cell(self.cx, self.cy).on_enter(self)
@@ -234,58 +240,46 @@ class PlayerEnt(BaseEnt):
         if self.ox == 0 and self.oy == 0:
                 # Work out movement
                 vx, vy = 0, 0
-                if newkeys[pygame.K_LEFT] or newkeys[pygame.K_a]:
+                k_left = newkeys[pygame.K_LEFT] or newkeys[pygame.K_a]
+                k_right = newkeys[pygame.K_RIGHT] or newkeys[pygame.K_d]
+                k_up = newkeys[pygame.K_UP] or newkeys[pygame.K_w]
+                k_down = newkeys[pygame.K_DOWN] or newkeys[pygame.K_s]
+
+                if k_left:
                         vx -= 1
-                        if self.stepcount % 2 == 0:
-                            self.sprite = img_player_sprites_left_left
-                        else:
-                            self.sprite = img_player_sprites_left_right
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
-                        self.sprite = img_player_sprites_left_standing
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
-                if newkeys[pygame.K_RIGHT] or newkeys[pygame.K_d]:
+                        self.spr_chain = [
+                            img_player_sprites_left_standing,
+                            img_player_sprites_left_left,
+                            img_player_sprites_left_standing,
+                            img_player_sprites_left_right,
+                        ]
+
+                if k_right:
                         vx += 1
-                        if self.stepcount % 2 == 0:
-                            self.sprite = img_player_sprites_right_left
-                        else:
-                            self.sprite = img_player_sprites_right_right
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
-                        self.sprite = img_player_sprites_right_standing
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
-                if newkeys[pygame.K_UP] or newkeys[pygame.K_w]:
+                        self.spr_chain = [
+                            img_player_sprites_right_standing,
+                            img_player_sprites_right_left,
+                            img_player_sprites_right_standing,
+                            img_player_sprites_right_right,
+                        ]
+
+                if k_up:
                         vy -= 1
-                        if self.stepcount % 2 == 0:
-                            self.sprite = img_player_sprites_up_left
-                        else:
-                            self.sprite = img_player_sprites_up_right
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
-                        self.sprite = img_player_sprites_up_standing
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
-                if newkeys[pygame.K_DOWN] or newkeys[pygame.K_s]:
+                        self.spr_chain = [
+                            img_player_sprites_up_standing,
+                            img_player_sprites_up_left,
+                            img_player_sprites_up_standing,
+                            img_player_sprites_up_right,
+                        ]
+
+                if k_down:
                         vy += 1
-                        if self.stepcount % 2 == 0:
-                            self.sprite = img_player_sprites_down_left
-                        else:
-                            self.sprite = img_player_sprites_down_right
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
-                        self.sprite = img_player_sprites_down_standing
-                        self.draw(screen, -real_camx, -real_camy, self.world)
-                        pygame.time.delay(40)
-                        pygame.display.update()
+                        self.spr_chain = [
+                            img_player_sprites_down_standing,
+                            img_player_sprites_down_left,
+                            img_player_sprites_down_standing,
+                            img_player_sprites_down_right,
+                        ]
 
                 # Bail if we're not moving anywhere
                 if vx == 0 and vy == 0:
